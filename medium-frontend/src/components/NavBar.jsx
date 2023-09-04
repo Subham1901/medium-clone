@@ -21,8 +21,10 @@ import {
 import { AiOutlineSearch } from "react-icons/ai";
 import InputSearch from "./InputSearch";
 import { useState } from "react";
+import { Link } from "react-router-dom";
+
 const NavBar = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <Container maxWidth="100%">
@@ -40,9 +42,11 @@ const NavBar = () => {
           justifyContent={"space-between"}
           alignItems={"center"}
         >
-          <Heading fontWeight={"semibold"} fontSize={["2xl", "3xl"]}>
-            Medium.
-          </Heading>
+          <Link to={"/"}>
+            <Heading fontWeight={"semibold"} fontSize={["2xl"]}>
+              Medium.
+            </Heading>
+          </Link>
           <Box className="search" ml={10}>
             <InputSearch />
           </Box>
@@ -51,7 +55,7 @@ const NavBar = () => {
             onClick={onOpen}
             className="searchIcon"
             ml={5}
-            variant={"outline"}
+            variant={"unstyled"}
             borderRadius={"full"}
             height={10}
             width={10}
@@ -68,23 +72,21 @@ const NavBar = () => {
               size={"xl"}
               borderRadius={"full"}
             >
-              <Avatar name="s" />
+              <Avatar name="s" size={["sm"]} />
             </MenuButton>
             <MenuList>
               <MenuGroup title="Profile">
-                <MenuItem>My Account</MenuItem>
-                <MenuItem>Payments </MenuItem>
+                <MenuItem>Account</MenuItem>
               </MenuGroup>
               <MenuDivider />
-              <MenuGroup title="Help">
-                <MenuItem>Docs</MenuItem>
-                <MenuItem onClick={() => setIsLoggedIn(false)}>FAQ</MenuItem>
+              <MenuGroup title="Action">
+                <MenuItem>Logout</MenuItem>
               </MenuGroup>
             </MenuList>
           </Menu>
         ) : (
-          <Button variant={"unstyled"} onClick={() => setIsLoggedIn(true)}>
-            Login
+          <Button fontWeight={"normal"} variant={"unstyled"}>
+            <Link to={"/auth"}>Signin</Link>
           </Button>
         )}
       </Container>
