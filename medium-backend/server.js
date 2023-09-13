@@ -1,6 +1,6 @@
 import express from "express";
 import bodyParser from "body-parser";
-
+import morgan from "morgan";
 import Router from "./Routers/expressRouter.js";
 
 const app = express();
@@ -9,6 +9,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/medium", Router);
+
 //Error handling
 
 Router.use((err, req, res, next) => {

@@ -11,6 +11,17 @@ import { useState } from "react";
 
 const LoginPage = () => {
   const [signup, setSignUp] = useState(false);
+  const [userData, setUserData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
+  const handleChange = (event) => {
+    setTimeout(() => {
+      setUserData({ ...userData, [event.target.name]: event.target.value });
+    }, 300);
+  };
+  const handleAuth = () => {};
   return (
     <>
       <Container
@@ -31,10 +42,13 @@ const LoginPage = () => {
           <Heading p={2} textAlign={"center"} fontWeight={"bold"}>
             {signup ? "Signup" : "Login"}
           </Heading>
-          <form>
+          <form onSubmit={handleAuth}>
             <FormControl w={"xs"}>
               {signup && (
                 <Input
+                  defaultValue={userData.name}
+                  onChange={handleChange}
+                  name="name"
                   mt={2}
                   focusBorderColor="black"
                   placeholder="Name"
@@ -42,6 +56,9 @@ const LoginPage = () => {
                 />
               )}
               <Input
+                defaultValue={userData.email}
+                onChange={handleChange}
+                name="email"
                 mt={2}
                 className="auth-input"
                 focusBorderColor="black"
@@ -49,6 +66,9 @@ const LoginPage = () => {
                 type="email"
               />
               <Input
+                defaultValue={userData.password}
+                onChange={handleChange}
+                name="password"
                 mt={2}
                 focusBorderColor="black"
                 className="auth-input"
