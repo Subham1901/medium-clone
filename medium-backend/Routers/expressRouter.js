@@ -29,14 +29,28 @@ export const sqlConnection = mysql.createConnection({
   port: 3306,
 });
 
-sqlConnection.connect(function (err) {
-  if (err) throw err;
-  console.log("Connected to database");
-});
+const ConnectToDB = () => {
+  sqlConnection.connect(function (err) {
+    if (err) throw err;
+    console.log("Connected to database");
+  });
+
+  sqlConnection.on("error", (err) => {
+    console.log(err.code);
+    if (err?.code === "PROTOCOL_CONNECTION_LOST") {
+      ConnectToDB();
+    } else {
+      throw err;
+    }
+  });
+};
+
+ConnectToDB();
 
 Router.post("/signup", (req, res, next) => {
   try {
     const { name, email, password } = req.body;
+    console.log(req.body);
     if (!name || !email || !password) {
       throw new Error("Please provide all the details");
     }
@@ -61,16 +75,24 @@ Router.post("/signup", (req, res, next) => {
 Router.post("/login", async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    let result = await checkEmail({ email, password }, "login");
-    res.send(result);
+    console.log(req.body);
+    checkEmail({ email, password }, "login")
+      .then((data) => {
+        res.send(data);
+      })
+      .catch((error) => {
+        console.log(error);
+        next({ message: error });
+      });
   } catch (error) {
-    next(err);
+    next(error);
   }
 });
 
 const checkEmail = ({ email, password }, source) => {
   return new Promise((resolve, reject) => {
     if (source === "login") {
+      console.log(email, password);
       let query = "select * from md_user where email = ?";
       sqlConnection.query(query, [email], async (err, data) => {
         if (err) {
@@ -78,17 +100,18 @@ const checkEmail = ({ email, password }, source) => {
           reject(err);
         }
         let userInfo = JSON.parse(JSON.stringify(data));
+
         if (userInfo.length === 0) {
-          reject("Email not exist, please signup!");
+          return reject("Email not exist, please signup!");
         }
 
         let isValidPassword = await bcrypt.compare(
           password,
-          userInfo[0].password
+          userInfo[0]?.password
         );
 
         if (!isValidPassword) {
-          reject("Invalid password");
+          return reject("Invalid password");
         }
         let jwtObj = {
           name: userInfo[0].name,
@@ -101,7 +124,7 @@ const checkEmail = ({ email, password }, source) => {
           [token, email],
           (err, data, result) => {
             if (err) {
-              reject(err);
+              return reject(err);
             }
 
             sqlConnection.query(
@@ -109,7 +132,7 @@ const checkEmail = ({ email, password }, source) => {
               [email],
               (err, data) => {
                 if (err) {
-                  reject(err);
+                  return reject(err);
                 }
 
                 resolve(data);
@@ -121,11 +144,13 @@ const checkEmail = ({ email, password }, source) => {
     } else if (source === "signup") {
       let value = [email];
       let query = "select * from md_user where email = ?";
-      sqlConnection.query(query, value, (err, data) => {
+      sqlConnection.query(query, value, (err, data, result) => {
         if (err) {
-          reject(err);
+          return reject(err);
         }
+
         let userInfo = JSON.parse(JSON.stringify(data));
+        console.log(userInfo);
         if (userInfo.length > 0) {
           reject("User already exist");
         }

@@ -2,10 +2,15 @@ import express from "express";
 import bodyParser from "body-parser";
 import morgan from "morgan";
 import Router from "./Routers/expressRouter.js";
-
+import cors from "cors";
 const app = express();
 
+let allow = cors({
+  origin: "*",
+});
+
 //Middlewares
+app.use(allow);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/medium", Router);

@@ -6,22 +6,54 @@ import {
   Button,
   Text,
   FormControl,
+  useDisclosure,
+  useToast,
+  Alert,
+  AlertIcon,
 } from "@chakra-ui/react";
 import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import Loader from "./Loader";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
+  const navigate = useNavigate();
+  const {
+    isOpen: isVisible,
+    onClose,
+    onOpen,
+  } = useDisclosure({ defaultIsOpen: true });
   const [signup, setSignUp] = useState(false);
+  const dispatch = useDispatch();
   const [userData, setUserData] = useState({
     name: "",
     email: "",
     password: "",
   });
-  const handleChange = (event) => {
-    setTimeout(() => {
-      setUserData({ ...userData, [event.target.name]: event.target.value });
-    }, 300);
+
+  const handleAuth = (event) => {
+    event.preventDefault();
+
+    if (signup) {
+      dispatch({ type: "USER_SIGNUP", payload: userData });
+      setUserData({ ...userData, name: "", email: "", password: "" });
+    } else {
+      console.log(userData);
+      dispatch({ type: "USER_LOGIN", payload: userData });
+      setUserData({ ...userData, name: "", email: "", password: "" });
+    }
   };
-  const handleAuth = () => {};
+
+  const auth = useSelector((state) => state);
+
+  if (auth?.isLoggedin) {
+    navigate("/post");
+  }
+
+  if (auth?.loading) {
+    return <Loader />;
+  }
+
   return (
     <>
       <Container
@@ -31,7 +63,7 @@ const LoginPage = () => {
         height={"80vh"}
       >
         <Box
-          w={"sm"}
+          w={["sm", "md"]}
           display={"flex"}
           justifyContent={"center"}
           alignItems={"center"}
@@ -42,12 +74,32 @@ const LoginPage = () => {
           <Heading p={2} textAlign={"center"} fontWeight={"bold"}>
             {signup ? "Signup" : "Login"}
           </Heading>
+          {(auth?.error || auth?.isSignedup) && signup && (
+            <Alert status={auth?.error ? "error" : "success"}>
+              <AlertIcon />
+              {auth?.error
+                ? auth.error
+                : "Successfully signed up! Please login"}
+            </Alert>
+          )}
+          {auth?.error && !signup && (
+            <Alert status="error">
+              <AlertIcon />
+              {auth?.error}
+            </Alert>
+          )}
+
           <form onSubmit={handleAuth}>
-            <FormControl w={"xs"}>
+            <FormControl w={["xs", "sm"]}>
               {signup && (
                 <Input
-                  defaultValue={userData.name}
-                  onChange={handleChange}
+                  value={userData?.name}
+                  onChange={(e) =>
+                    setUserData({
+                      ...userData,
+                      [e.target.name]: e.target.value,
+                    })
+                  }
                   name="name"
                   mt={2}
                   focusBorderColor="black"
@@ -56,8 +108,10 @@ const LoginPage = () => {
                 />
               )}
               <Input
-                defaultValue={userData.email}
-                onChange={handleChange}
+                onChange={(e) =>
+                  setUserData({ ...userData, [e.target.name]: e.target.value })
+                }
+                value={userData?.email}
                 name="email"
                 mt={2}
                 className="auth-input"
@@ -66,8 +120,10 @@ const LoginPage = () => {
                 type="email"
               />
               <Input
-                defaultValue={userData.password}
-                onChange={handleChange}
+                value={userData.password}
+                onChange={(e) =>
+                  setUserData({ ...userData, [e.target.name]: e.target.value })
+                }
                 name="password"
                 mt={2}
                 focusBorderColor="black"
@@ -76,6 +132,10 @@ const LoginPage = () => {
                 placeholder="Password"
               />
               <Button
+                sx={{
+                  _disabled: true,
+                }}
+                type="submit"
                 mt={4}
                 fontWeight={"md"}
                 w={"full"}
@@ -94,7 +154,7 @@ const LoginPage = () => {
                 onClick={() => setSignUp((prev) => !prev)}
                 variant={"unstyled"}
                 fontSize={"xs"}
-                ml={1}
+                ml={2}
               >
                 {signup ? "Login" : "Signup"}
               </Button>
