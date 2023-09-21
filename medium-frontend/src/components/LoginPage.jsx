@@ -15,6 +15,7 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Loader from "./Loader";
 import { useNavigate } from "react-router-dom";
+import ShowAlert from "./ShowAlert";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -33,24 +34,24 @@ const LoginPage = () => {
 
   const handleAuth = (event) => {
     event.preventDefault();
-
     if (signup) {
       dispatch({ type: "USER_SIGNUP", payload: userData });
       setUserData({ ...userData, name: "", email: "", password: "" });
     } else {
-      console.log(userData);
       dispatch({ type: "USER_LOGIN", payload: userData });
       setUserData({ ...userData, name: "", email: "", password: "" });
     }
   };
 
-  const auth = useSelector((state) => state);
+  const { isLoggedin, loading, error, isSignedup } = useSelector(
+    (state) => state.auth
+  );
 
-  if (auth?.isLoggedin) {
-    navigate("/post");
+  if (isLoggedin) {
+    navigate("/");
   }
 
-  if (auth?.loading) {
+  if (loading) {
     return <Loader />;
   }
 
@@ -74,19 +75,14 @@ const LoginPage = () => {
           <Heading p={2} textAlign={"center"} fontWeight={"bold"}>
             {signup ? "Signup" : "Login"}
           </Heading>
-          {(auth?.error || auth?.isSignedup) && signup && (
-            <Alert status={auth?.error ? "error" : "success"}>
+          {isSignedup && signup && (
+            <Alert status="success">
               <AlertIcon />
-              {auth?.error
-                ? auth.error
-                : "Successfully signed up! Please login"}
+              Successfully signed up! Please login
             </Alert>
           )}
-          {auth?.error && !signup && (
-            <Alert status="error">
-              <AlertIcon />
-              {auth?.error}
-            </Alert>
+          {error && (
+            <ShowAlert status="error" message={error} type="CLEAR_ERROR" />
           )}
 
           <form onSubmit={handleAuth}>

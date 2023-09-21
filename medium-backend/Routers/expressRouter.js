@@ -21,6 +21,8 @@ Router.use(
     ].join(" ");
   })
 );
+
+//SQL Connection
 export const sqlConnection = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -46,6 +48,8 @@ const ConnectToDB = () => {
 };
 
 ConnectToDB();
+
+//Authentication
 
 Router.post("/signup", (req, res, next) => {
   try {
@@ -117,7 +121,7 @@ const checkEmail = ({ email, password }, source) => {
           name: userInfo[0].name,
           email: userInfo[0].email,
         };
-        let token = await jwt.sign(jwtObj, "mediumv1");
+        let token = await jwt.sign(jwtObj, "mediumv1", { expiresIn: 86400 });
 
         sqlConnection.query(
           "update md_user set token = ? where email = ?;",
@@ -179,5 +183,34 @@ let insertUserData = (name, email, password) => {
     } else resolve("No user");
   });
 };
+//Authentication END
+
+Router.post("/post/create", (req, res, next) => {
+  try {
+    let { title, topic, story, userid } = req.body;
+    console.log(topic);
+    topic = topic.join(",");
+    if (!userid) {
+      throw new Error("Please login to publish any post");
+    }
+    if (!title || !topic || !story) {
+      throw new Error("All the fileds are mandatory to publish a post");
+    }
+
+    let query =
+      "insert into md_posts (pk_post_id,title,description,topics,created_at,updated_at,fk_user_id) VALUES ?";
+
+    let values = [[v4(), title, story, topic, new Date(), new Date(), userid]];
+
+    sqlConnection.query(query, [values], (err, data) => {
+      if (err) {
+        next(err);
+      }
+      res.send(data);
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 
 export default Router;

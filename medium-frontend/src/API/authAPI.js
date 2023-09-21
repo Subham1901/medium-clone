@@ -21,11 +21,10 @@ export const login = async (userinfo) => {
     localStorage.setItem("mediumv1", JSON.stringify(data[0]));
     return { data };
   } catch (failure) {
-    let {
-      response: {
-        data: { message },
-      },
-    } = failure;
+    let message = failure?.response?.data?.message;
+    if (!message) {
+      message = failure?.message;
+    }
 
     return { message };
   }

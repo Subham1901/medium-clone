@@ -175,3 +175,9 @@ blockquote {
   justify-content: center;
   align-items: center;
 }
+.right-navbar > :not(:last-child) {
+  margin-right: 40px;
+}
+.write {
+  color: #5d5d5d;
+}

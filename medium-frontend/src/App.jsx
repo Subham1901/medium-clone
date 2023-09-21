@@ -9,7 +9,6 @@ function App() {
     <>
       <NavBar />
       <Outlet />
-      <NewPost />
     </>
   );
 }
@@ -20,7 +19,8 @@ export const browserRouter = createBrowserRouter([
     element: <App />,
     children: [
       { path: "/auth", element: <LoginPage /> },
-      { path: "/post", element: <Post /> },
+      { path: "/", element: <Post /> },
+      { path: "/create-post", element: <NewPost /> },
     ],
   },
 ]);

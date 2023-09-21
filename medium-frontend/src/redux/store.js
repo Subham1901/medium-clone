@@ -1,11 +1,11 @@
 import { createStore, applyMiddleware } from "redux";
 import sagaMiddleware from "redux-saga";
-import authReducer from "./authReducer";
 import mediumWatcher from "./sagaWatcher";
 import { composeWithDevTools } from "redux-devtools-extension";
+import rootReducer from "./authReducer";
 const createSagaMiddleware = sagaMiddleware();
 const store = createStore(
-  authReducer,
+  rootReducer,
   composeWithDevTools(applyMiddleware(createSagaMiddleware))
 );
 

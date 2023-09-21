@@ -21,14 +21,30 @@ import {
 } from "@chakra-ui/react";
 import { AiOutlineSearch } from "react-icons/ai";
 import InputSearch from "./InputSearch";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-
+import { useEffect, useState } from "react";
+import jwt_decode from "jwt-decode";
+import { FiEdit } from "react-icons/fi";
 const NavBar = () => {
   const dispatch = useDispatch();
+  const [user, setUser] = useState(
+    JSON.parse(localStorage.getItem("mediumv1"))
+  );
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const auth = useSelector((state) => state);
-  console.log(auth);
+  const auth = useSelector((state) => state.auth);
+  console.log(user);
+
+  useEffect(() => {
+    if (user?.token && user) {
+      let expiryDate = jwt_decode(user?.token)?.exp;
+      if (expiryDate * 1000 <= new Date().getTime()) {
+        dispatch({ type: "LOGOUT" });
+      } else {
+        dispatch({ type: "KEEP_LOGIN", payload: user });
+      }
+    }
+  }, [user, dispatch]);
 
   return (
     <Container maxWidth="100%">
@@ -68,6 +84,7 @@ const NavBar = () => {
             <AiOutlineSearch size={25} />
           </Button>
         </Box>
+
         {auth?.isLoggedin ? (
           <Menu>
             <MenuButton
@@ -84,6 +101,17 @@ const NavBar = () => {
                   {auth?.user?.name}
                 </Text>
                 <MenuItem>Account</MenuItem>
+                <MenuItem>
+                  <Link to={"/create-post"}>
+                    <Box
+                      className="write"
+                      display={"flex"}
+                      alignItems={"self-end"}
+                    >
+                      <FiEdit size={25} /> Write
+                    </Box>
+                  </Link>
+                </MenuItem>
               </MenuGroup>
               <MenuDivider />
               <MenuGroup title="Action">
@@ -97,9 +125,16 @@ const NavBar = () => {
             </MenuList>
           </Menu>
         ) : (
-          <Button fontWeight={"normal"} variant={"unstyled"}>
-            <Link to={"/auth"}>Signin</Link>
-          </Button>
+          <Box className="right-navbar" display={"flex"} alignItems={"center"}>
+            <Link to={"/create-post"}>
+              <Box className="write" display={"flex"} alignItems={"self-end"}>
+                <FiEdit size={25} /> Write
+              </Box>
+            </Link>
+            <Button fontWeight={"normal"} variant={"unstyled"}>
+              <Link to={"/auth"}>Signin</Link>
+            </Button>
+          </Box>
         )}
       </Container>
       <Modal isOpen={isOpen} onClose={onClose}>
